@@ -1,8 +1,30 @@
 use std::env;
 use std::process::exit;
+use std::fs::File;
+use std::io::Read;
 
 fn main() {
-  run_to_first_arg();
+  let name_server_address = read_nameserver().unwrap();
+  println!("Using name server : {}", name_server_address);
+}
+
+fn read_nameserver() -> Option<String> {
+  match File::open("/etc/resolv.conf") {
+    Ok(file) => parse_resolv_conf(file),
+    Err(e) => {
+      println!("Could not read /etc/resolv.conf : {}", e);
+      None
+    }
+  }
+}
+
+fn parse_resolv_conf(file: File) -> Option<String> {
+  let mut s = String::new();
+  let mut f = file;
+  f.read_to_string(&mut s);
+  let ns_lines = s.split("\n").filter(|&l| l.starts_with("nameserver"));
+  let mut ns_addresses = ns_lines.flat_map(|l| l.split_whitespace().skip(1).next());
+  return ns_addresses.next().map(|x| x.to_string());
 }
 
 fn run_to_first_arg() {
