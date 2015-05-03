@@ -4,12 +4,24 @@ use std::env;
 use std::process::exit;
 use std::fs::File;
 use std::io::Read;
-use std::net::{Ipv4Addr, SocketAddr};
+use std::net::{Ipv4Addr, SocketAddr, UdpSocket};
 use std::str::FromStr;
 
 fn main() {
+  let args: Vec<_> = env::args().collect();
+  if args.is_empty() {
+    println!("Please supply dns name to query as parameter");
+    exit(5);
+  }
+  let name_to_query = &args[1];
+  println!("Name to query: {}", name_to_query);
   let name_server_address = parse_ipv4_address(read_nameserver().unwrap());
   println!("Using name server : {}", name_server_address);
+
+  let udp_socket = UdpSocket::bind("127.0.0.1:12345").unwrap();
+  let buf = &mut [0];
+  let bytes_written = udp_socket.send_to(&[7], (name_server_address, 53)).unwrap();
+  println!("wrote: {}", bytes_written);
 }
 
 fn read_nameserver() -> Option<String> {
