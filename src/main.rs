@@ -1,10 +1,14 @@
+#![feature(convert)]
+
 use std::env;
 use std::process::exit;
 use std::fs::File;
 use std::io::Read;
+use std::net::{Ipv4Addr, SocketAddr};
+use std::str::FromStr;
 
 fn main() {
-  let name_server_address = read_nameserver().unwrap();
+  let name_server_address = parse_ipv4_address(read_nameserver().unwrap());
   println!("Using name server : {}", name_server_address);
 }
 
@@ -25,6 +29,13 @@ fn parse_resolv_conf(file: File) -> Option<String> {
   let ns_lines = s.split("\n").filter(|&l| l.starts_with("nameserver"));
   let mut ns_addresses = ns_lines.flat_map(|l| l.split_whitespace().skip(1).next());
   return ns_addresses.next().map(|x| x.to_string());
+}
+
+fn parse_ipv4_address(src: String) -> Ipv4Addr {
+  match Ipv4Addr::from_str(src.as_str()) {
+    Ok(result) => result,
+    Err(e) => exit(4)
+  }
 }
 
 fn run_to_first_arg() {
