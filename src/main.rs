@@ -146,6 +146,21 @@ fn process_response(response: Vec<u8>, msg_id_1: &u8, msg_id_2: &u8) {
   let type_byte_2 = iter.next().unwrap() as &u8;
   println!("\ttype: {}", print_type(256 * type_byte_1 + type_byte_2));
 
+  let class_byte_1 = iter.next().unwrap() as &u8;
+  let class_byte_2 = iter.next().unwrap() as &u8;
+  println!("\tclass: {}", 256 * class_byte_1 + class_byte_2);
+
+  let ttl_byte_1 = iter.next().unwrap().clone() as u32;
+  let ttl_byte_2 = iter.next().unwrap().clone() as u32;
+  let ttl_byte_3 = iter.next().unwrap().clone() as u32;
+  let ttl_byte_4 = iter.next().unwrap().clone() as u32;
+  let ttl = ((ttl_byte_4 & 0xFF) <<  0) |
+            ((ttl_byte_3 & 0xFF) <<  8) |
+            ((ttl_byte_2 & 0xFF) << 16) |
+            ((ttl_byte_1 & 0xFF) << 24);
+
+  println!("\tttl: {}", (16777216 * ttl_byte_4.clone() as u32) + (65536 * ttl_byte_3.clone() as u32) + (256 * ttl_byte_2.clone() as u32) + ttl_byte_1.clone() as u32);
+
   let mut byte = None;
   while {
     byte = iter.next();
