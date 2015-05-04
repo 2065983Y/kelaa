@@ -7,7 +7,7 @@ use std::env;
 use std::process::exit;
 use std::fs::File;
 use std::io::Read;
-use std::net::{Ipv4Addr, SocketAddr, UdpSocket};
+use std::net::{Ipv4Addr, UdpSocket};
 use std::str::FromStr;
 use std::os::unix::io::AsRawFd;
 //use std::net::setsockopt;
@@ -26,7 +26,7 @@ fn main() {
   let name_server_address = parse_ipv4_address(read_nameserver().unwrap());
   println!("Using name server : {}", name_server_address);
 
-  let mut udp_socket = UdpSocket::bind("127.0.0.1:12345").unwrap();
+  let udp_socket = UdpSocket::bind("127.0.0.1:12345").unwrap();
   set_socket_timeout(&udp_socket);
   let mut query_vec: Vec<u8> = Vec::new();
   query_vec.push(0x07); // message id 1
@@ -65,7 +65,7 @@ fn main() {
       for &x in response_buf.iter() {
         response_vec.push(x);
       }
-      println!("Got {} bytes:", n);
+      println!("Got {} bytes from {} ", n, address);
       for b in response_vec {
         print!("{} ", b as u8);
       }
@@ -110,31 +110,4 @@ fn set_socket_timeout(socket: &UdpSocket) {
   let raw_fd = socket.as_raw_fd();
   //setsockopt(raw_fd.as_sock_t(), SO_RCVTIMEO, 1000, 1000);
 }
-
-
-fn run_to_first_arg() {
-  let args: Vec<_> = env::args().collect();
-  if args.is_empty() {
-    println!("Please supply command line parameter.");
-    exit(2);
-  }
-
-  let m = args[1].parse::<u32>();
-  match m {
-    Ok(maximum) => run_to(maximum),
-    Err(e)=> {
-      println!("Could not parse int from {} : {}", args[1], e);
-      exit(3); 
-    }
-  } 
- 
-  println!("The first argument is {}", args[1]);
-}
-
-fn run_to(m: u32) {
-  for x in 0..m {
-    println!("{}", x);
-  }
-}
-
 
