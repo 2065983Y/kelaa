@@ -99,6 +99,33 @@ fn process_response(response: Vec<u8>, msg_id_1: &u8, msg_id_2: &u8) {
   let third_byte = iter.next().unwrap() as &u8;
   println!("\tIs a response? {}", check_single_bit(third_byte, 7));
   println!("\tIs standard query? {}", !(check_single_bit(third_byte, 6) && check_single_bit(third_byte, 5) && check_single_bit(third_byte, 4) && check_single_bit(third_byte, 3)));
+  println!("\tAA? {}", check_single_bit(third_byte, 2));
+  println!("\tTC? {}", check_single_bit(third_byte, 1));
+  println!("\tRD? {}", check_single_bit(third_byte, 0));
+
+  let fourth_byte = iter.next().unwrap() as &u8;
+  println!("\tRA? {}", check_single_bit(fourth_byte, 7));
+  println!("\t<must be three zero bits> {}", !(check_single_bit(fourth_byte, 6) && check_single_bit(fourth_byte, 5) && check_single_bit(fourth_byte, 4)));
+  let rcode = fourth_byte & 15;
+  println!("\trcode: {}", rcode);
+  if rcode != 0 {
+    if (rcode == 1) {
+      println!("\trcode : Format error.");
+    }
+    if (rcode == 2) {
+      println!("\trcode : Server failure.");
+    }
+    if (rcode == 3) {
+      println!("\trcode : Name error.");
+    }
+    if (rcode == 4) {
+      println!("\trcode : Not implemented.");
+    }
+    if (rcode == 5) {
+      println!("\trcode : Refused.");
+    }
+    exit(11);
+  }
 
   let mut byte = None;
   while {
