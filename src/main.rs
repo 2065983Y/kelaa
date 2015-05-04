@@ -96,6 +96,10 @@ fn process_response(response: Vec<u8>, msg_id_1: &u8, msg_id_2: &u8) {
     exit(9);
   }
 
+  let third_byte = iter.next().unwrap() as &u8;
+  println!("\tIs a response? {}", check_single_bit(third_byte, 0));
+  println!("\tIs standard query? {}", !(check_single_bit(third_byte, 1) && check_single_bit(third_byte, 2) && check_single_bit(third_byte, 3)));
+
   let mut byte = None;
   while {
     byte = iter.next();
@@ -112,6 +116,10 @@ fn process_response(response: Vec<u8>, msg_id_1: &u8, msg_id_2: &u8) {
   //println!("Got {}", response.len());
 }
 
+fn check_single_bit(b: &u8, position: u32) -> bool {
+  let powered = (2 as u8).pow(position);
+  powered == b & (1 << position)
+}
 
 fn read_nameserver() -> Option<String> {
   match File::open("/etc/resolv.conf") {
