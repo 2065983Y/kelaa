@@ -1,5 +1,6 @@
 #![feature(convert)]
 #![feature(udp)]
+//#![feature(core)]
 
 //extern crate core;
 
@@ -68,7 +69,7 @@ fn main() {
         response_vec.push(x);
       }
       println!("Got {} bytes from {} ", n, address);
-      process_response(response_vec, msg_id_1, msg_id_2);
+      process_response(response_vec, &msg_id_1, &msg_id_2);
       println!("\nDone.");
       n
     },
@@ -79,8 +80,22 @@ fn main() {
   };
 }
 
-fn process_response(response: Vec<u8>, msg_id_1: u8, msg_id_2: u8) {
+fn process_response(response: Vec<u8>, msg_id_1: &u8, msg_id_2: &u8) {
   let mut iter = response.iter();
+
+  let received_msg_id_1 = iter.next().unwrap() as &u8;
+  if (msg_id_1 != received_msg_id_1) {
+    println!("Error: expected first byte of message id to be {} but was {}",
+      msg_id_1, received_msg_id_1);
+    exit(9);
+  }
+  let received_msg_id_2 = iter.next().unwrap() as &u8;
+  if (msg_id_2 != received_msg_id_2) {
+    println!("Error: expected second byte of message id to be {} but was {}",
+      msg_id_2, received_msg_id_2);
+    exit(9);
+  }
+
   let mut byte = None;
   while {
     byte = iter.next();
@@ -96,6 +111,7 @@ fn process_response(response: Vec<u8>, msg_id_1: u8, msg_id_2: u8) {
   */
   //println!("Got {}", response.len());
 }
+
 
 fn read_nameserver() -> Option<String> {
   match File::open("/etc/resolv.conf") {
