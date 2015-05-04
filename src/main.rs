@@ -82,7 +82,10 @@ fn main() {
         response_vec.push(x);
       }
       //response_vec.push_all(&buf);
-      println!("Got {} bytes:  {}", n, String::from_utf8(response_vec).unwrap());
+      println!("Got {} bytes:", n);
+      for b in response_vec {
+        print!("{} ", b as u8);
+      }
       n
     },
     Err(e) => {
