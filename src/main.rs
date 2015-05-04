@@ -31,8 +31,8 @@ fn main() {
   let mut query_vec: Vec<u8> = Vec::new();
   query_vec.push(0x07); // message id 1
   query_vec.push(0x09); // message id 2
-  query_vec.push(0x00); // qr, opcode, aa, tc, rd, ra
-  query_vec.push(0x00); // res1, res2, res3, rcode
+  query_vec.push(0x01); // qr, opcode, aa, tc, rd
+  query_vec.push(0x00); // ra, res1, res2, res3, rcode
   query_vec.push(0x00); // qdcount 1
   query_vec.push(0x01); // qdcount 2
   query_vec.push(0x00); // ancount 1
