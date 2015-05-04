@@ -97,8 +97,8 @@ fn process_response(response: Vec<u8>, msg_id_1: &u8, msg_id_2: &u8) {
   }
 
   let third_byte = iter.next().unwrap() as &u8;
-  println!("\tIs a response? {}", check_single_bit(third_byte, 0));
-  println!("\tIs standard query? {}", !(check_single_bit(third_byte, 1) && check_single_bit(third_byte, 2) && check_single_bit(third_byte, 3)));
+  println!("\tIs a response? {}", check_single_bit(third_byte, 7));
+  println!("\tIs standard query? {}", !(check_single_bit(third_byte, 6) && check_single_bit(third_byte, 5) && check_single_bit(third_byte, 4) && check_single_bit(third_byte, 3)));
 
   let mut byte = None;
   while {
