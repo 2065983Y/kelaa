@@ -22,21 +22,13 @@ fn main() {
   let name_to_query = &args[1];
   println!("Name to query: {}", name_to_query);
   let parts_to_query = name_to_query.split(".");
-/*  println!("Parts to query: ");
-  for p in parts_to_query {
-    print!("{} {} / ", p, p.len());
-  }
-*/
-  println!("");
 
   let name_server_address = parse_ipv4_address(read_nameserver().unwrap());
   println!("Using name server : {}", name_server_address);
 
   let mut udp_socket = UdpSocket::bind("127.0.0.1:12345").unwrap();
   set_socket_timeout(&udp_socket);
-  //let mut buf = [0u8, ..1000];
   let mut query_vec: Vec<u8> = Vec::new();
-//[ 9, 9, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x96 ]; 
   query_vec.push(0x07); // message id 1
   query_vec.push(0x09); // message id 2
   query_vec.push(0x00); // qr, opcode, aa, tc, rd, ra
@@ -49,44 +41,21 @@ fn main() {
   query_vec.push(0x00); // nscount 2
   query_vec.push(0x00); // arcount 1
   query_vec.push(0x00); // arcount 2
-  //query_vec.push(name_to_query.len() as u8); // number of bytes
-  //println!("len vs given , {}, {}", name_to_query.len() as u8, 0x0a);
-  //query_vec.push(0x0a); // number of bytes
-/*  for c in name_to_query.clone().into_bytes() {
-    query_vec.push(c as u8);
-  A
-*/
+
   for p in parts_to_query {
     query_vec.push(p.as_bytes().len() as u8); // length
     for &c in p.as_bytes() {
       query_vec.push(c as u8); // query
     }
   }
-  /*query_vec.push(0x02); // lnegth
-  query_vec.push('t' as u8); //query
-  query_vec.push('i' as u8); //query
-  query_vec.push(0x02); // lnegth
-  query_vec.push('f' as u8); //query
-  query_vec.push('i' as u8); //query
-  */
   query_vec.push(0x00); // end name
+
   query_vec.push(0x00); // qtype 1
   query_vec.push(0x01); // qtype 2
   query_vec.push(0x00); // qclass 1
   query_vec.push(0x01); // qclass 2
 
   let mut response_buf = [0; 100];
-
-/*
-  let transaction_id: u32 = rand::random();
-  let mut req_data_buf = [0u8, ..16];
-  let mut req_data = BufWriter::new(req_data_buf);
-  req_data.write_be_u64(0x41727101980).unwrap(); // connection_id, identifies the protocol.
-  req_data.write_be_u32(0).unwrap(); // action: connect
-  req_data.write_be_u32(transaction_id).unwrap();
-  
-  println!("{}", socket.send_to(req_data_buf, ("31.172.63.252", 80)));
-*/
 
   let bytes_written = udp_socket.send_to(&query_vec, (name_server_address, 53)).unwrap();
   println!("wrote: {}", bytes_written);
@@ -96,7 +65,6 @@ fn main() {
       for &x in response_buf.iter() {
         response_vec.push(x);
       }
-      //response_vec.push_all(&buf);
       println!("Got {} bytes:", n);
       for b in response_vec {
         print!("{} ", b as u8);
