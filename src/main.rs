@@ -41,27 +41,25 @@ fn main() {
   query_vec.push(0x00); // nscount 2
   query_vec.push(0x00); // arcount 1
   query_vec.push(0x00); // arcount 2
-  query_vec.push(name_to_query.len() as u8); // number of bytes
+  //query_vec.push(name_to_query.len() as u8); // number of bytes
   //println!("len vs given , {}, {}", name_to_query.len() as u8, 0x0a);
   //query_vec.push(0x0a); // number of bytes
-  for c in name_to_query.clone().into_bytes() {
+/*  for c in name_to_query.clone().into_bytes() {
     query_vec.push(c as u8);
-  }
+  A
+*/
+  query_vec.push(0x02); // lnegth
+  query_vec.push('t' as u8); //query
+  query_vec.push('i' as u8); //query
+  query_vec.push(0x02); // lnegth
+  query_vec.push('f' as u8); //query
+  query_vec.push('i' as u8); //query
+  query_vec.push(0x00); // end name
   query_vec.push(0x00); // qtype 1
   query_vec.push(0x01); // qtype 2
   query_vec.push(0x00); // qclass 1
   query_vec.push(0x01); // qclass 2
 
-//  query_vec.push('r' as u8);
-//  query_vec.push('e' as u8);
-//  query_vec.push('a' as u8);
-//  query_vec.push('k' as u8);
-//  query_vec.push('t' as u8);
-//  query_vec.push('o' as u8);
-//  query_vec.push('r' as u8);
-//  query_vec.push('.' as u8);
-//  query_vec.push('f' as u8);
-//  query_vec.push('i' as u8);
   let mut response_buf = [0; 100];
 
 /*
