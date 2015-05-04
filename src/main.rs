@@ -1,4 +1,7 @@
 #![feature(convert)]
+#![feature(udp)]
+
+//extern crate core;
 
 use std::env;
 use std::process::exit;
@@ -6,6 +9,9 @@ use std::fs::File;
 use std::io::Read;
 use std::net::{Ipv4Addr, SocketAddr, UdpSocket};
 use std::str::FromStr;
+use std::os::unix::io::AsRawFd;
+//use std::net::setsockopt;
+//use core::array::FixedSizeArray;
 
 fn main() {
   let args: Vec<_> = env::args().collect();
@@ -18,10 +24,74 @@ fn main() {
   let name_server_address = parse_ipv4_address(read_nameserver().unwrap());
   println!("Using name server : {}", name_server_address);
 
-  let udp_socket = UdpSocket::bind("127.0.0.1:12345").unwrap();
-  let buf = &mut [0];
-  let bytes_written = udp_socket.send_to(&[7], (name_server_address, 53)).unwrap();
+  let mut udp_socket = UdpSocket::bind("127.0.0.1:12345").unwrap();
+  set_socket_timeout(&udp_socket);
+  //let mut buf = [0u8, ..1000];
+  let mut query_vec: Vec<u8> = Vec::new();
+//[ 9, 9, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x96 ]; 
+  query_vec.push(0x07); // message id 1
+  query_vec.push(0x09); // message id 2
+  query_vec.push(0x00); // qr, opcode, aa, tc, rd, ra
+  query_vec.push(0x00); // res1, res2, res3, rcode
+  query_vec.push(0x00); // qdcount 1
+  query_vec.push(0x01); // qdcount 2
+  query_vec.push(0x00); // ancount 1
+  query_vec.push(0x00); // ancount 2
+  query_vec.push(0x00); // nscount 1
+  query_vec.push(0x00); // nscount 2
+  query_vec.push(0x00); // arcount 1
+  query_vec.push(0x00); // arcount 2
+  query_vec.push(name_to_query.len() as u8); // number of bytes
+  //println!("len vs given , {}, {}", name_to_query.len() as u8, 0x0a);
+  //query_vec.push(0x0a); // number of bytes
+  for c in name_to_query.clone().into_bytes() {
+    query_vec.push(c as u8);
+  }
+  query_vec.push(0x00); // qtype 1
+  query_vec.push(0x01); // qtype 2
+  query_vec.push(0x00); // qclass 1
+  query_vec.push(0x01); // qclass 2
+
+//  query_vec.push('r' as u8);
+//  query_vec.push('e' as u8);
+//  query_vec.push('a' as u8);
+//  query_vec.push('k' as u8);
+//  query_vec.push('t' as u8);
+//  query_vec.push('o' as u8);
+//  query_vec.push('r' as u8);
+//  query_vec.push('.' as u8);
+//  query_vec.push('f' as u8);
+//  query_vec.push('i' as u8);
+  let mut response_buf = [0; 100];
+
+/*
+  let transaction_id: u32 = rand::random();
+  let mut req_data_buf = [0u8, ..16];
+  let mut req_data = BufWriter::new(req_data_buf);
+  req_data.write_be_u64(0x41727101980).unwrap(); // connection_id, identifies the protocol.
+  req_data.write_be_u32(0).unwrap(); // action: connect
+  req_data.write_be_u32(transaction_id).unwrap();
+  
+  println!("{}", socket.send_to(req_data_buf, ("31.172.63.252", 80)));
+*/
+
+  let bytes_written = udp_socket.send_to(&query_vec, (name_server_address, 53)).unwrap();
   println!("wrote: {}", bytes_written);
+  match udp_socket.recv_from(&mut response_buf) {
+    Ok((n, address)) => {
+      let mut response_vec: Vec<u8> = Vec::new();
+      for &x in response_buf.iter() {
+        response_vec.push(x);
+      }
+      //response_vec.push_all(&buf);
+      println!("Got {} bytes:  {}", n, String::from_utf8(response_vec).unwrap());
+      n
+    },
+    Err(e) => {
+      println!("Could not read answer: {}", e);
+      -1
+    }
+  };
 }
 
 fn read_nameserver() -> Option<String> {
@@ -49,6 +119,13 @@ fn parse_ipv4_address(src: String) -> Ipv4Addr {
     Err(e) => exit(4)
   }
 }
+
+fn set_socket_timeout(socket: &UdpSocket) {
+  socket.set_time_to_live(1);
+  let raw_fd = socket.as_raw_fd();
+  //setsockopt(raw_fd.as_sock_t(), SO_RCVTIMEO, 1000, 1000);
+}
+
 
 fn run_to_first_arg() {
   let args: Vec<_> = env::args().collect();
