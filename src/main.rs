@@ -29,8 +29,10 @@ fn main() {
   let udp_socket = UdpSocket::bind("127.0.0.1:12345").unwrap();
   set_socket_timeout(&udp_socket);
   let mut query_vec: Vec<u8> = Vec::new();
-  query_vec.push(0x07); // message id 1
-  query_vec.push(0x09); // message id 2
+  let msg_id_1 = 0x07;
+  let msg_id_2 = 0x09;
+  query_vec.push(msg_id_1); // message id 1
+  query_vec.push(msg_id_2); // message id 2
   query_vec.push(0x01); // qr, opcode, aa, tc, rd
   query_vec.push(0x00); // ra, res1, res2, res3, rcode
   query_vec.push(0x00); // qdcount 1
@@ -66,9 +68,7 @@ fn main() {
         response_vec.push(x);
       }
       println!("Got {} bytes from {} ", n, address);
-      for b in response_vec {
-        print!("{} ", b as u8);
-      }
+      process_response(response_vec, msg_id_1, msg_id_2);
       println!("\nDone.");
       n
     },
@@ -77,6 +77,24 @@ fn main() {
       -1
     }
   };
+}
+
+fn process_response(response: Vec<u8>, msg_id_1: u8, msg_id_2: u8) {
+  let mut iter = response.iter();
+  let mut byte = None;
+  while {
+    byte = iter.next();
+    byte != None
+  } {
+    print!("{} ", byte.unwrap() as &u8);
+  }
+
+  let mut byte_option = iter.next();
+  /*for b in response {
+    print!("{} ", b as u8);
+  }
+  */
+  //println!("Got {}", response.len());
 }
 
 fn read_nameserver() -> Option<String> {
