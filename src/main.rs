@@ -112,6 +112,22 @@ fn process_response(response: Vec<u8>, msg_id_1: &u8, msg_id_2: &u8) {
     exit(11);
   }
 
+  let fifth_byte = iter.next().unwrap() as &u8;
+  let sixth_byte = iter.next().unwrap() as &u8;
+  println!("\tQDCOUNT: {}", 256 * fifth_byte + sixth_byte);
+
+  let seventh_byte = iter.next().unwrap() as &u8;
+  let eighth_byte = iter.next().unwrap() as &u8;
+  println!("\tANCOUNT: {}", 256 * seventh_byte + eighth_byte);
+
+  let ninth_byte = iter.next().unwrap() as &u8;
+  let tenth_byte = iter.next().unwrap() as &u8;
+  println!("\tNSCOUNT: {}", 256 * ninth_byte + tenth_byte);
+
+  let eleventh_byte = iter.next().unwrap() as &u8;
+  let twelwth_byte = iter.next().unwrap() as &u8;
+  println!("\tARCOUNT: {}", 256 * eleventh_byte + twelwth_byte);
+
   let mut byte = None;
   while {
     byte = iter.next();
