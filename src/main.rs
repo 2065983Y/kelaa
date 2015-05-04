@@ -142,6 +142,10 @@ fn process_response(response: Vec<u8>, msg_id_1: &u8, msg_id_2: &u8) {
   }
   println!("\tname: {}", name);
 
+  let type_byte_1 = iter.next().unwrap() as &u8;
+  let type_byte_2 = iter.next().unwrap() as &u8;
+  println!("\ttype: {}", print_type(256 * type_byte_1 + type_byte_2));
+
   let mut byte = None;
   while {
     byte = iter.next();
@@ -178,6 +182,19 @@ fn check_rcode(rcode: u8) -> bool {
     return false;
   }
   true
+}
+
+fn print_type(type_code: u8) -> String {
+  if (type_code == 1) { return "A".to_string(); }
+  if (type_code == 2) { return "NS".to_string(); }
+  if (type_code == 5) { return "CNAME".to_string(); }
+  if (type_code == 6) { return "SOA".to_string(); }
+  if (type_code == 11) { return "WKS".to_string(); }
+  if (type_code == 12) { return "PTR".to_string(); }
+  if (type_code == 15) { return "MX".to_string(); }
+  if (type_code == 33) { return "SRV".to_string(); }
+  if (type_code == 38) { return "A6".to_string(); }
+  return format!("Unknown type {}", type_code);
 }
 
 fn check_single_bit(b: &u8, position: u32) -> bool {
