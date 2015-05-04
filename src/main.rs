@@ -108,22 +108,7 @@ fn process_response(response: Vec<u8>, msg_id_1: &u8, msg_id_2: &u8) {
   println!("\t<must be three zero bits> {}", !(check_single_bit(fourth_byte, 6) && check_single_bit(fourth_byte, 5) && check_single_bit(fourth_byte, 4)));
   let rcode = fourth_byte & 15;
   println!("\trcode: {}", rcode);
-  if rcode != 0 {
-    if (rcode == 1) {
-      println!("\trcode : Format error.");
-    }
-    if (rcode == 2) {
-      println!("\trcode : Server failure.");
-    }
-    if (rcode == 3) {
-      println!("\trcode : Name error.");
-    }
-    if (rcode == 4) {
-      println!("\trcode : Not implemented.");
-    }
-    if (rcode == 5) {
-      println!("\trcode : Refused.");
-    }
+  if !check_rcode(rcode) {
     exit(11);
   }
 
@@ -141,6 +126,28 @@ fn process_response(response: Vec<u8>, msg_id_1: &u8, msg_id_2: &u8) {
   }
   */
   //println!("Got {}", response.len());
+}
+
+fn check_rcode(rcode: u8) -> bool {
+  if rcode != 0 {
+    if (rcode == 1) {
+      println!("\trcode : Format error.");
+    }
+    if (rcode == 2) {
+      println!("\trcode : Server failure.");
+    }
+    if (rcode == 3) {
+      println!("\trcode : Name error.");
+    }
+    if (rcode == 4) {
+      println!("\trcode : Not implemented.");
+    }
+    if (rcode == 5) {
+      println!("\trcode : Refused.");
+    }
+    return false;
+  }
+  true
 }
 
 fn check_single_bit(b: &u8, position: u32) -> bool {
