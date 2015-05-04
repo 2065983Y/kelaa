@@ -128,6 +128,20 @@ fn process_response(response: Vec<u8>, msg_id_1: &u8, msg_id_2: &u8) {
   let twelwth_byte = iter.next().unwrap() as &u8;
   println!("\tARCOUNT: {}", 256 * eleventh_byte + twelwth_byte);
 
+  let mut name_part_byte: &u8;
+  let mut name = String::new();
+  while {
+    name_part_byte = iter.next().unwrap() as &u8;
+    name_part_byte != &(0u8)
+  } {
+    let part_length = name_part_byte.clone();
+    for i in 0..part_length {
+      name.push(iter.next().unwrap().clone() as char);
+    }
+    name.push('.');
+  }
+  println!("\tname: {}", name);
+
   let mut byte = None;
   while {
     byte = iter.next();
