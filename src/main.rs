@@ -86,6 +86,7 @@ fn main() {
       for b in response_vec {
         print!("{} ", b as u8);
       }
+      println!("\nDone.");
       n
     },
     Err(e) => {
