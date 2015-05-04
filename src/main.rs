@@ -21,6 +21,14 @@ fn main() {
   }
   let name_to_query = &args[1];
   println!("Name to query: {}", name_to_query);
+  let parts_to_query = name_to_query.split(".");
+/*  println!("Parts to query: ");
+  for p in parts_to_query {
+    print!("{} {} / ", p, p.len());
+  }
+*/
+  println!("");
+
   let name_server_address = parse_ipv4_address(read_nameserver().unwrap());
   println!("Using name server : {}", name_server_address);
 
@@ -48,12 +56,19 @@ fn main() {
     query_vec.push(c as u8);
   A
 */
-  query_vec.push(0x02); // lnegth
+  for p in parts_to_query {
+    query_vec.push(p.as_bytes().len() as u8); // length
+    for &c in p.as_bytes() {
+      query_vec.push(c as u8); // query
+    }
+  }
+  /*query_vec.push(0x02); // lnegth
   query_vec.push('t' as u8); //query
   query_vec.push('i' as u8); //query
   query_vec.push(0x02); // lnegth
   query_vec.push('f' as u8); //query
   query_vec.push('i' as u8); //query
+  */
   query_vec.push(0x00); // end name
   query_vec.push(0x00); // qtype 1
   query_vec.push(0x01); // qtype 2
