@@ -28,6 +28,7 @@ fn main() {
   println!("Using name server : {}", name_server_address);
 
   let udp_socket = UdpSocket::bind("127.0.0.1:12345").unwrap();
+  println!("Bound socket");
   set_socket_timeout(&udp_socket);
   let mut query_vec: Vec<u8> = Vec::new();
   let msg_id_1 = 0x07;
@@ -60,8 +61,14 @@ fn main() {
 
   let mut response_buf = [0; 100];
 
-  let bytes_written = udp_socket.send_to(&query_vec, (name_server_address, 53)).unwrap();
-  println!("wrote: {}", bytes_written);
+  match udp_socket.send_to(&query_vec, (name_server_address, 53)) {
+    Ok(bytes_written) => println!("wrote: {}", bytes_written),
+    Err(e) => {
+      println!("Could not make query: {}", e);
+      exit(19);
+    }
+  }
+
   match udp_socket.recv_from(&mut response_buf) {
     Ok((n, address)) => {
       let mut response_vec: Vec<u8> = Vec::new();
@@ -156,6 +163,10 @@ fn process_response(response: Vec<u8>, msg_id_1: &u8, msg_id_2: &u8) {
   let ttl_byte_4 = iter.next().unwrap().clone() as u32;
   let ttl = ((ttl_byte_1 << 24) + (ttl_byte_2 << 16) + (ttl_byte_3 << 8) + (ttl_byte_4 << 0));
   println!("\tttl: {} {} {} {} {}", ttl_byte_1, ttl_byte_2, ttl_byte_3, ttl_byte_4, ttl);
+
+  let rdlength_byte_1 = iter.next().unwrap() as &u8;
+  let rdlength_byte_2 = iter.next().unwrap() as &u8;
+  println!("\trdlength: {}", (rdlength_byte_1 * 256) + rdlength_byte_2);
 
   let mut byte = None;
   while {
