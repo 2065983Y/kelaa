@@ -147,15 +147,32 @@ fn process_response(response: Vec<u8>, msg_id_1: &u8, msg_id_2: &u8) {
     }
     name.push('.');
   }
-  println!("\tname: {}", name);
+  println!("\tQNAME: {}", name);
+
+  let q_type_byte_1 = iter.next().unwrap() as &u8;
+  let q_type_byte_2 = iter.next().unwrap() as &u8;
+  println!("\tQTYPE: {}", print_type(256 * q_type_byte_1 + q_type_byte_2));
+
+  let q_class_byte_1 = iter.next().unwrap() as &u8;
+  let q_class_byte_2 = iter.next().unwrap() as &u8;
+  println!("\tQCLASS: {}", 256 * q_class_byte_1 + q_class_byte_2);
+
+  let first_name_byte = iter.next().unwrap() as &u8;
+  let first_name_bit = check_single_bit(first_name_byte, 7);
+  let second_name_bit = check_single_bit(first_name_byte, 6);
+  let response_name_is_pointer = first_name_bit && second_name_bit;
+  println!("\tIs pointer? {}", response_name_is_pointer);
+  if (response_name_is_pointer) {
+    iter.next();
+  }
 
   let type_byte_1 = iter.next().unwrap() as &u8;
   let type_byte_2 = iter.next().unwrap() as &u8;
-  println!("\ttype: {}", print_type(256 * type_byte_1 + type_byte_2));
+  println!("\tTYPE: {}", print_type(256 * type_byte_1 + type_byte_2));
 
   let class_byte_1 = iter.next().unwrap() as &u8;
   let class_byte_2 = iter.next().unwrap() as &u8;
-  println!("\tclass: {}", 256 * class_byte_1 + class_byte_2);
+  println!("\tCLASS: {}", 256 * class_byte_1 + class_byte_2);
 
   let ttl_byte_1 = iter.next().unwrap().clone() as u32;
   let ttl_byte_2 = iter.next().unwrap().clone() as u32;
