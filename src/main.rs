@@ -203,19 +203,19 @@ fn process_response(response: Vec<u8>, msg_id_1: &u8, msg_id_2: &u8) {
 
 fn check_rcode(rcode: u8) -> bool {
   if rcode != 0 {
-    if (rcode == 1) {
+    if rcode == 1 {
       println!("\trcode : Format error.");
     }
-    if (rcode == 2) {
+    if rcode == 2 {
       println!("\trcode : Server failure.");
     }
-    if (rcode == 3) {
+    if rcode == 3 {
       println!("\trcode : Name error.");
     }
-    if (rcode == 4) {
+    if rcode == 4 {
       println!("\trcode : Not implemented.");
     }
-    if (rcode == 5) {
+    if rcode == 5 {
       println!("\trcode : Refused.");
     }
     return false;
@@ -224,15 +224,15 @@ fn check_rcode(rcode: u8) -> bool {
 }
 
 fn print_type(type_code: u8) -> String {
-  if (type_code == 1) { return "A".to_string(); }
-  if (type_code == 2) { return "NS".to_string(); }
-  if (type_code == 5) { return "CNAME".to_string(); }
-  if (type_code == 6) { return "SOA".to_string(); }
-  if (type_code == 11) { return "WKS".to_string(); }
-  if (type_code == 12) { return "PTR".to_string(); }
-  if (type_code == 15) { return "MX".to_string(); }
-  if (type_code == 33) { return "SRV".to_string(); }
-  if (type_code == 38) { return "A6".to_string(); }
+  if type_code == 1 { return "A".to_string(); }
+  if type_code == 2 { return "NS".to_string(); }
+  if type_code == 5 { return "CNAME".to_string(); }
+  if type_code == 6 { return "SOA".to_string(); }
+  if type_code == 11 { return "WKS".to_string(); }
+  if type_code == 12 { return "PTR".to_string(); }
+  if type_code == 15 { return "MX".to_string(); }
+  if type_code == 33 { return "SRV".to_string(); }
+  if type_code == 38 { return "A6".to_string(); }
   return format!("Unknown type {}", type_code);
 }
 
