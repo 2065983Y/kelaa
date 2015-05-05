@@ -119,20 +119,20 @@ fn process_response(response: Vec<u8>, msg_id_1: &u8, msg_id_2: &u8) {
     exit(11);
   }
 
-  let fifth_byte = iter.next().unwrap() as &u8;
-  let sixth_byte = iter.next().unwrap() as &u8;
+  let fifth_byte = iter.next().unwrap().clone() as u32;
+  let sixth_byte = iter.next().unwrap().clone() as u32;
   println!("\tQDCOUNT: {}", 256 * fifth_byte + sixth_byte);
 
-  let seventh_byte = iter.next().unwrap() as &u8;
-  let eighth_byte = iter.next().unwrap() as &u8;
+  let seventh_byte = iter.next().unwrap().clone() as u32;
+  let eighth_byte = iter.next().unwrap().clone() as u32;
   println!("\tANCOUNT: {}", 256 * seventh_byte + eighth_byte);
 
-  let ninth_byte = iter.next().unwrap() as &u8;
-  let tenth_byte = iter.next().unwrap() as &u8;
+  let ninth_byte = iter.next().unwrap().clone() as u32;
+  let tenth_byte = iter.next().unwrap().clone() as u32;
   println!("\tNSCOUNT: {}", 256 * ninth_byte + tenth_byte);
 
-  let eleventh_byte = iter.next().unwrap() as &u8;
-  let twelwth_byte = iter.next().unwrap() as &u8;
+  let eleventh_byte = iter.next().unwrap().clone() as u32;
+  let twelwth_byte = iter.next().unwrap().clone() as u32;
   println!("\tARCOUNT: {}", 256 * eleventh_byte + twelwth_byte);
 
   let mut name_part_byte: &u8;
@@ -178,7 +178,7 @@ fn process_response(response: Vec<u8>, msg_id_1: &u8, msg_id_2: &u8) {
   let ttl_byte_2 = iter.next().unwrap().clone() as u32;
   let ttl_byte_3 = iter.next().unwrap().clone() as u32;
   let ttl_byte_4 = iter.next().unwrap().clone() as u32;
-  let ttl = ((ttl_byte_1 << 24) + (ttl_byte_2 << 16) + (ttl_byte_3 << 8) + (ttl_byte_4 << 0));
+  let ttl = (ttl_byte_1 << 24) + (ttl_byte_2 << 16) + (ttl_byte_3 << 8) + (ttl_byte_4 << 0);
   println!("\tttl: {} {} {} {} {}", ttl_byte_1, ttl_byte_2, ttl_byte_3, ttl_byte_4, ttl);
 
   let rdlength_byte_1 = iter.next().unwrap() as &u8;
