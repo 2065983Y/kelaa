@@ -183,8 +183,14 @@ fn process_response(response: Vec<u8>, msg_id_1: &u8, msg_id_2: &u8) {
 
   let rdlength_byte_1 = iter.next().unwrap() as &u8;
   let rdlength_byte_2 = iter.next().unwrap() as &u8;
-  println!("\trdlength: {}", (rdlength_byte_1 * 256) + rdlength_byte_2);
+  let rdlength = rdlength_byte_1 * 256 + rdlength_byte_2;
+  println!("\trdlength: {}", rdlength);
 
+  print!("\tRESPONSE: ");
+  for i in 0..rdlength {
+    print!("{}.", iter.next().unwrap() as &u8);
+  }
+/*
   let mut byte = None;
   while {
     byte = iter.next();
@@ -192,13 +198,7 @@ fn process_response(response: Vec<u8>, msg_id_1: &u8, msg_id_2: &u8) {
   } {
     print!("{} ", byte.unwrap() as &u8);
   }
-
-  let mut byte_option = iter.next();
-  /*for b in response {
-    print!("{} ", b as u8);
-  }
-  */
-  //println!("Got {}", response.len());
+*/
 }
 
 fn check_rcode(rcode: u8) -> bool {
