@@ -36,7 +36,7 @@ fn main() {
     }
   }
 
-  match udp_socket.recv_from(&mut response_buf) {
+  let processed_bytes = match udp_socket.recv_from(&mut response_buf) {
     Ok((n, address)) => {
       let mut response_vec: Vec<u8> = Vec::new();
       for &x in response_buf.iter() {
@@ -52,19 +52,20 @@ fn main() {
       -1
     }
   };
+  println!("Processed all {} bytes, exiting. Bye!.", processed_bytes);
 }
 
 fn process_response(response: Vec<u8>, msg_id: &(u8, u8)) {
   let mut iter = response.iter();
 
   let received_msg_id_1 = iter.next().unwrap() as &u8;
-  if (&msg_id.0 != received_msg_id_1) {
+  if &msg_id.0 != received_msg_id_1 {
     println!("Error: expected first byte of message id to be {} but was {}",
       msg_id.0, received_msg_id_1);
     exit(9);
   }
   let received_msg_id_2 = iter.next().unwrap() as &u8;
-  if (&msg_id.1 != received_msg_id_2) {
+  if &msg_id.1 != received_msg_id_2 {
     println!("Error: expected second byte of message id to be {} but was {}",
       msg_id.1, received_msg_id_2);
     exit(9);
@@ -109,7 +110,7 @@ fn process_response(response: Vec<u8>, msg_id: &(u8, u8)) {
     name_part_byte != &(0u8)
   } {
     let part_length = name_part_byte.clone();
-    for i in 0..part_length {
+    for _ in 0..part_length {
       name.push(iter.next().unwrap().clone() as char);
     }
     name.push('.');
@@ -129,7 +130,7 @@ fn process_response(response: Vec<u8>, msg_id: &(u8, u8)) {
   let second_name_bit = check_single_bit(first_name_byte, 6);
   let response_name_is_pointer = first_name_bit && second_name_bit;
   println!("\tIs pointer? {}", response_name_is_pointer);
-  if (response_name_is_pointer) {
+  if response_name_is_pointer {
     iter.next();
   }
 
@@ -154,7 +155,7 @@ fn process_response(response: Vec<u8>, msg_id: &(u8, u8)) {
   println!("\trdlength: {}", rdlength);
 
   print!("\tRESPONSE: ");
-  for i in 0..rdlength {
+  for _ in 0..rdlength {
     print!("{}.", iter.next().unwrap() as &u8);
   }
 /*
@@ -251,7 +252,14 @@ fn read_nameserver() -> String {
 fn parse_resolv_conf(file: File) -> String {
   let mut s = String::new();
   let mut f = file;
-  f.read_to_string(&mut s);
+  match f.read_to_string(&mut s) {
+    Ok(n) => println!("Read {} bytes from file.", n),
+    Err(e) => {
+      println!("Could not read data from file : {}", e);
+      exit(6);
+    }
+  }
+
   let ns_lines = s.split("\n").filter(|&l| l.starts_with("nameserver"));
   let mut ns_addresses = ns_lines.flat_map(|l| l.split_whitespace().skip(1).next());
   return ns_addresses.next().map(|x| x.to_string()).
@@ -264,9 +272,9 @@ fn parse_ipv4_address(src: String) -> Ipv4Addr {
 }
 
 fn bind_client_socket() -> UdpSocket {
-  let client_local_port = "127.0.0.1:65530"; // todo randomise and retry
-  let udp_socket = (UdpSocket::bind(client_local_port).ok().
-    expect(format!("Could not bind UDP socket to {}", client_local_port).as_str()));
+  let client_local_port = "127.0.0.1:65530"; // TODO randomise and retry
+  let udp_socket = UdpSocket::bind(client_local_port).ok().
+    expect(format!("Could not bind UDP socket to {}", client_local_port).as_str());
   println!("Bound client UDP socket {}", client_local_port);
   set_socket_timeout(&udp_socket);
   udp_socket
@@ -274,8 +282,8 @@ fn bind_client_socket() -> UdpSocket {
 
 // TODO implement :)
 fn set_socket_timeout(socket: &UdpSocket) {
-  socket.set_time_to_live(1);
-  let raw_fd = socket.as_raw_fd();
+  let _ = socket.set_time_to_live(1);
+  let _ /* raw_fd */  = socket.as_raw_fd();
   //setsockopt(raw_fd.as_sock_t(), SO_RCVTIMEO, 1000, 1000);
 }
 
