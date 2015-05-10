@@ -43,7 +43,7 @@ fn main() {
         response_vec.push(x);
       }
       println!("Got {} bytes from {} ", n, address);
-      process_response(response_vec, &msg_id.0, &msg_id.1);
+      process_response(response_vec, &msg_id);
       println!("\nDone.");
       n
     },
@@ -54,19 +54,19 @@ fn main() {
   };
 }
 
-fn process_response(response: Vec<u8>, msg_id_1: &u8, msg_id_2: &u8) {
+fn process_response(response: Vec<u8>, msg_id: &(u8, u8)) {
   let mut iter = response.iter();
 
   let received_msg_id_1 = iter.next().unwrap() as &u8;
-  if (msg_id_1 != received_msg_id_1) {
+  if (&msg_id.0 != received_msg_id_1) {
     println!("Error: expected first byte of message id to be {} but was {}",
-      msg_id_1, received_msg_id_1);
+      msg_id.0, received_msg_id_1);
     exit(9);
   }
   let received_msg_id_2 = iter.next().unwrap() as &u8;
-  if (msg_id_2 != received_msg_id_2) {
+  if (&msg_id.1 != received_msg_id_2) {
     println!("Error: expected second byte of message id to be {} but was {}",
-      msg_id_1, received_msg_id_2);
+      msg_id.1, received_msg_id_2);
     exit(9);
   }
 
