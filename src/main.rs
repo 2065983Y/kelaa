@@ -128,11 +128,11 @@ fn process_response(response: Vec<u8>, msg_id: &(u8, u8)) {
   let twelwth_byte = get_byte(&iter.next()) as u32;
   println!("\tARCOUNT: {}", 256 * eleventh_byte + twelwth_byte);
 
-  let mut name_part_byte: &u8;
+  let mut name_part_byte: u8;
   let mut name = String::new();
   while {
-    name_part_byte = iter.next().unwrap() as &u8;
-    name_part_byte != &(0u8)
+    name_part_byte = get_byte(&iter.next()) as u8;
+    name_part_byte != 0u8
   } {
     let part_length = name_part_byte.clone();
     for _ in 0..part_length {
@@ -142,29 +142,29 @@ fn process_response(response: Vec<u8>, msg_id: &(u8, u8)) {
   }
   println!("\tQNAME: {}", name);
 
-  let q_type_byte_1 = iter.next().unwrap() as &u8;
-  let q_type_byte_2 = iter.next().unwrap() as &u8;
+  let q_type_byte_1 = get_byte(&iter.next()) as u8;
+  let q_type_byte_2 = get_byte(&iter.next()) as u8;
   println!("\tQTYPE: {}", print_type(256 * q_type_byte_1 + q_type_byte_2));
 
-  let q_class_byte_1 = iter.next().unwrap() as &u8;
-  let q_class_byte_2 = iter.next().unwrap() as &u8;
+  let q_class_byte_1 = get_byte(&iter.next()) as u8;
+  let q_class_byte_2 = get_byte(&iter.next()) as u8;
   println!("\tQCLASS: {}", 256 * q_class_byte_1 + q_class_byte_2);
 
-  let first_name_byte = iter.next().unwrap() as &u8;
-  let first_name_bit = check_single_bit(first_name_byte, 7);
-  let second_name_bit = check_single_bit(first_name_byte, 6);
+  let first_name_byte = get_byte(&iter.next()) as u8;
+  let first_name_bit = check_single_bit(&first_name_byte, 7);
+  let second_name_bit = check_single_bit(&first_name_byte, 6);
   let response_name_is_pointer = first_name_bit && second_name_bit;
   println!("\tIs pointer? {}", response_name_is_pointer);
   if response_name_is_pointer {
     iter.next();
   }
 
-  let type_byte_1 = iter.next().unwrap() as &u8;
-  let type_byte_2 = iter.next().unwrap() as &u8;
+  let type_byte_1 = get_byte(&iter.next()) as u8;
+  let type_byte_2 = get_byte(&iter.next()) as u8;
   println!("\tTYPE: {}", print_type(256 * type_byte_1 + type_byte_2));
 
-  let class_byte_1 = iter.next().unwrap() as &u8;
-  let class_byte_2 = iter.next().unwrap() as &u8;
+  let class_byte_1 = get_byte(&iter.next()) as u8;
+  let class_byte_2 = get_byte(&iter.next()) as u8;
   println!("\tCLASS: {}", 256 * class_byte_1 + class_byte_2);
 
   let ttl_byte_1 = get_byte(&iter.next()) as u32;
@@ -174,14 +174,14 @@ fn process_response(response: Vec<u8>, msg_id: &(u8, u8)) {
   let ttl = (ttl_byte_1 << 24) + (ttl_byte_2 << 16) + (ttl_byte_3 << 8) + (ttl_byte_4 << 0);
   println!("\tttl: {} {} {} {} {}", ttl_byte_1, ttl_byte_2, ttl_byte_3, ttl_byte_4, ttl);
 
-  let rdlength_byte_1 = iter.next().unwrap() as &u8;
-  let rdlength_byte_2 = iter.next().unwrap() as &u8;
+  let rdlength_byte_1 = get_byte(&iter.next()) as u8;
+  let rdlength_byte_2 = get_byte(&iter.next()) as u8;
   let rdlength = rdlength_byte_1 * 256 + rdlength_byte_2;
   println!("\trdlength: {}", rdlength);
 
   print!("\tRESPONSE: ");
   for _ in 0..rdlength {
-    print!("{}.", iter.next().unwrap() as &u8);
+    print!("{}.", get_byte(&iter.next()) as u8);
   }
 /*
   let mut byte = None;
