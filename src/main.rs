@@ -258,10 +258,8 @@ fn parse_resolv_conf(file: File) -> Option<String> {
 }
 
 fn parse_ipv4_address(src: String) -> Ipv4Addr {
-  match Ipv4Addr::from_str(src.as_str()) {
-    Ok(result) => result,
-    Err(e) => exit(4)
-  }
+  Ipv4Addr::from_str(src.as_str()).ok().expect(
+      format!("Could not parse ipv4 address from '{}', e", src).as_str())
 }
 
 fn bind_client_socket() -> UdpSocket {
