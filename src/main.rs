@@ -15,12 +15,7 @@ use std::os::unix::io::AsRawFd;
 //use core::array::FixedSizeArray;
 
 fn main() {
-  let args: Vec<_> = env::args().collect();
-  if args.is_empty() {
-    println!("Please supply dns name to query as parameter");
-    exit(5);
-  }
-  let name_to_query = &args[1];
+  let name_to_query = read_name_to_query_from_command_line();
   println!("Name to query: {}", name_to_query);
   let parts_to_query = name_to_query.split(".");
 
@@ -273,3 +268,11 @@ fn set_socket_timeout(socket: &UdpSocket) {
   //setsockopt(raw_fd.as_sock_t(), SO_RCVTIMEO, 1000, 1000);
 }
 
+fn read_name_to_query_from_command_line() -> String {
+    let args: Vec<_> = env::args().collect();
+    if args.len() < 2 {
+      println!("Please supply DNS name to query as parameter. Exiting.");
+      exit(5);
+    }
+    args[1].clone()
+}
