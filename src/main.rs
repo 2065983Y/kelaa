@@ -97,7 +97,7 @@ fn process_response(response: Vec<u8>, msg_id: &(u8, u8)) {
     name_part_byte = get_byte(&iter.next()) as u8;
     name_part_byte != 0
   } {
-    let part_length = name_part_byte.clone();
+    let &part_length = &name_part_byte;
     for _ in 0..part_length {
       name.push(get_byte(&iter.next()) as char);
     }
