@@ -17,14 +17,16 @@ use std::os::unix::io::AsRawFd;
 fn main() {
   let name_to_query = read_name_to_query_from_command_line();
   println!("Name to query: {}", name_to_query);
-  let parts_to_query = name_to_query.split(".");
 
   let name_server_address = parse_ipv4_address(read_nameserver().unwrap());
   println!("Using name server : {}", name_server_address);
 
-  let udp_socket = UdpSocket::bind("127.0.0.1:12345").unwrap();
-  println!("Bound socket");
+  let client_local_port = "127.0.0.1:65530"; // todo randomise and retry
+  let udp_socket = (UdpSocket::bind(client_local_port).ok().
+    expect(format!("Could not bind UDP socket to {}", client_local_port).as_str()));
+  println!("Bound client UDP socket {}", client_local_port);
   set_socket_timeout(&udp_socket);
+
   let mut query_vec: Vec<u8> = Vec::new();
   let msg_id_1 = 0x07;
   let msg_id_2 = 0x09;
@@ -41,7 +43,7 @@ fn main() {
   query_vec.push(0x00); // arcount 1
   query_vec.push(0x00); // arcount 2
 
-  for p in parts_to_query {
+  for p in name_to_query.split(".") {
     query_vec.push(p.as_bytes().len() as u8); // length
     for &c in p.as_bytes() {
       query_vec.push(c as u8); // query
