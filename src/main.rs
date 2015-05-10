@@ -15,6 +15,7 @@ use std::io::Read;
 use std::net::{Ipv4Addr, UdpSocket};
 use std::str::FromStr;
 use std::os::unix::io::AsRawFd;
+use std::slice::Iter;
 use num::FromPrimitive;
 
 fn main() {
@@ -57,15 +58,25 @@ fn main() {
   println!("Processed all {} bytes, exiting. Bye!.", processed_bytes);
 }
 
+fn process_next_byte<F>(byte_option: &Option<&u8>, processor: F) -> u8
+  where F: Fn(&u8) -> u8 {
+    let b = byte_option.expect("Iterator is empty!");
+    processor(b)
+}
+
 fn process_response(response: Vec<u8>, msg_id: &(u8, u8)) {
   let mut iter = response.iter();
 
-  let received_msg_id_1 = iter.next().unwrap() as &u8;
-  if &msg_id.0 != received_msg_id_1 {
-    println!("Error: expected first byte of message id to be {} but was {}",
-      msg_id.0, received_msg_id_1);
-    exit(9);
-  }
+  process_next_byte(&iter.next(), |b| {
+    if &msg_id.0 != b {
+      println!("Error: expected first byte of message id to be {} but was {}",
+        msg_id.0, b);
+      exit(9);
+    } else {
+        b.clone()
+    }
+  });
+
   let received_msg_id_2 = iter.next().unwrap() as &u8;
   if &msg_id.1 != received_msg_id_2 {
     println!("Error: expected second byte of message id to be {} but was {}",
