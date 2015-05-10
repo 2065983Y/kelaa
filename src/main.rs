@@ -86,22 +86,10 @@ fn process_response(response: Vec<u8>, msg_id: &(u8, u8)) {
     b.clone()
   });
 
-
-  let fifth_byte = get_byte(&iter.next()) as u32;
-  let sixth_byte = get_byte(&iter.next()) as u32;
-  println!("\tQDCOUNT: {}", 256 * fifth_byte + sixth_byte);
-
-  let seventh_byte = get_byte(&iter.next()) as u32;
-  let eighth_byte = get_byte(&iter.next()) as u32;
-  println!("\tANCOUNT: {}", 256 * seventh_byte + eighth_byte);
-
-  let ninth_byte = get_byte(&iter.next()) as u32;
-  let tenth_byte = get_byte(&iter.next()) as u32;
-  println!("\tNSCOUNT: {}", 256 * ninth_byte + tenth_byte);
-
-  let eleventh_byte = get_byte(&iter.next()) as u32;
-  let twelwth_byte = get_byte(&iter.next()) as u32;
-  println!("\tARCOUNT: {}", 256 * eleventh_byte + twelwth_byte);
+  println!("\tQDCOUNT: {}", get_two_byte_value(&iter.next(), &iter.next()));
+  println!("\tANCOUNT: {}", get_two_byte_value(&iter.next(), &iter.next()));
+  println!("\tNSCOUNT: {}", get_two_byte_value(&iter.next(), &iter.next()));
+  println!("\tARCOUNT: {}", get_two_byte_value(&iter.next(), &iter.next()));
 
   let mut name_part_byte: u8;
   let mut name = String::new();
@@ -117,13 +105,8 @@ fn process_response(response: Vec<u8>, msg_id: &(u8, u8)) {
   }
   println!("\tQNAME: {}", name);
 
-  let q_type_byte_1 = get_byte(&iter.next()) as u8;
-  let q_type_byte_2 = get_byte(&iter.next()) as u8;
-  println!("\tQTYPE: {}", print_type(256 * q_type_byte_1 + q_type_byte_2));
-
-  let q_class_byte_1 = get_byte(&iter.next()) as u8;
-  let q_class_byte_2 = get_byte(&iter.next()) as u8;
-  println!("\tQCLASS: {}", 256 * q_class_byte_1 + q_class_byte_2);
+  println!("\tQTYPE: {}", print_type(get_two_byte_value(&iter.next(), &iter.next()) as u8));
+  println!("\tQCLASS: {}", get_two_byte_value(&iter.next(), &iter.next()));
 
   let first_name_byte = get_byte(&iter.next()) as u8;
   let first_name_bit = check_single_bit(&first_name_byte, 7);
@@ -134,13 +117,8 @@ fn process_response(response: Vec<u8>, msg_id: &(u8, u8)) {
     iter.next();
   }
 
-  let type_byte_1 = get_byte(&iter.next()) as u8;
-  let type_byte_2 = get_byte(&iter.next()) as u8;
-  println!("\tTYPE: {}", print_type(256 * type_byte_1 + type_byte_2));
-
-  let class_byte_1 = get_byte(&iter.next()) as u8;
-  let class_byte_2 = get_byte(&iter.next()) as u8;
-  println!("\tCLASS: {}", 256 * class_byte_1 + class_byte_2);
+  println!("\tTYPE: {}", print_type(get_two_byte_value(&iter.next(), &iter.next()) as u8));
+  println!("\tCLASS: {}", get_two_byte_value(&iter.next(), &iter.next()));
 
   let ttl_byte_1 = get_byte(&iter.next()) as u32;
   let ttl_byte_2 = get_byte(&iter.next()) as u32;
@@ -149,9 +127,7 @@ fn process_response(response: Vec<u8>, msg_id: &(u8, u8)) {
   let ttl = (ttl_byte_1 << 24) + (ttl_byte_2 << 16) + (ttl_byte_3 << 8) + (ttl_byte_4 << 0);
   println!("\tttl: {} {} {} {} {}", ttl_byte_1, ttl_byte_2, ttl_byte_3, ttl_byte_4, ttl);
 
-  let rdlength_byte_1 = get_byte(&iter.next()) as u8;
-  let rdlength_byte_2 = get_byte(&iter.next()) as u8;
-  let rdlength = rdlength_byte_1 * 256 + rdlength_byte_2;
+  let rdlength = get_two_byte_value(&iter.next(), &iter.next());
   println!("\trdlength: {}", rdlength);
 
   print!("\tRESPONSE: ");
@@ -181,6 +157,10 @@ fn get_byte(byte_option: &Option<&u8>) -> u8 {
   process_next_byte(byte_option, |b| {
     b.clone()
   })
+}
+
+fn get_two_byte_value(byte1: &Option<&u8>, byte2: &Option<&u8>) -> u32 {
+  256 * get_byte(byte1) as u32 + get_byte(byte2) as u32
 }
 
 fn construct_a_record_query(name_to_query: String, msg_id: (u8, u8)) -> Vec<u8> {
