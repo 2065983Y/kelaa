@@ -64,57 +64,68 @@ fn process_next_byte<F>(byte_option: &Option<&u8>, processor: F) -> u8
     processor(b)
 }
 
+fn assert_byte(byte_option: &Option<&u8>, expected: &u8, msg: &str) {
+    process_next_byte(byte_option, |b| {
+      if expected != b {
+        println!("Error: expected {} to be {} but was {}",
+          msg, expected, b);
+        exit(9);
+      }
+      b.clone()
+    });
+}
+
+fn get_byte(byte_option: &Option<&u8>) -> u8 {
+  process_next_byte(byte_option, |b| {
+    b.clone()
+  })
+}
+
+
 fn process_response(response: Vec<u8>, msg_id: &(u8, u8)) {
   let mut iter = response.iter();
 
+  assert_byte(&iter.next(), &msg_id.0, "first byte of message id");
+  assert_byte(&iter.next(), &msg_id.1, "second byte of message id");
+
   process_next_byte(&iter.next(), |b| {
-    if &msg_id.0 != b {
-      println!("Error: expected first byte of message id to be {} but was {}",
-        msg_id.0, b);
-      exit(9);
-    } else {
-        b.clone()
-    }
+    println!("\tIs a response? {}", check_single_bit(b, 7));
+    println!("\tIs standard query? {}", !(check_single_bit(b, 6) && check_single_bit(b, 5) && check_single_bit(b, 4) && check_single_bit(b, 3)));
+    println!("\tAA? {}", check_single_bit(b, 2));
+    println!("\tTC? {}", check_single_bit(b, 1));
+    println!("\tRD? {}", check_single_bit(b, 0));
+    b.clone()
   });
 
-  let received_msg_id_2 = iter.next().unwrap() as &u8;
-  if &msg_id.1 != received_msg_id_2 {
-    println!("Error: expected second byte of message id to be {} but was {}",
-      msg_id.1, received_msg_id_2);
-    exit(9);
-  }
+  process_next_byte(&iter.next(), |b| {
+    println!("\tRA? {}", check_single_bit(b, 7));
+    println!("\t<must be three zero bits> {}", !(check_single_bit(b, 6) && check_single_bit(b, 5) && check_single_bit(b, 4)));
+    let rcode = b & 15;
+    println!("\trcode: {}", rcode);
 
-  let third_byte = iter.next().unwrap() as &u8;
-  println!("\tIs a response? {}", check_single_bit(third_byte, 7));
-  println!("\tIs standard query? {}", !(check_single_bit(third_byte, 6) && check_single_bit(third_byte, 5) && check_single_bit(third_byte, 4) && check_single_bit(third_byte, 3)));
-  println!("\tAA? {}", check_single_bit(third_byte, 2));
-  println!("\tTC? {}", check_single_bit(third_byte, 1));
-  println!("\tRD? {}", check_single_bit(third_byte, 0));
+    let rcode_obj = FromPrimitive::from_u8(rcode);
+    let rcode_unwrapped = rcode_obj.expect(format!("Could not parse {} as rcode", rcode).as_str());
+    if !check_rcode(rcode_unwrapped) {
+      exit(11);
+    }
+    b.clone()
+  });
 
-  let fourth_byte = iter.next().unwrap() as &u8;
-  println!("\tRA? {}", check_single_bit(fourth_byte, 7));
-  println!("\t<must be three zero bits> {}", !(check_single_bit(fourth_byte, 6) && check_single_bit(fourth_byte, 5) && check_single_bit(fourth_byte, 4)));
-  let rcode = fourth_byte & 15;
-  println!("\trcode: {}", rcode);
 
-  if !check_rcode(FromPrimitive::from_u8(rcode).expect(format!("Could not parse {} as rcode", rcode).as_str())) {
-    exit(11);
-  }
-
-  let fifth_byte = iter.next().unwrap().clone() as u32;
-  let sixth_byte = iter.next().unwrap().clone() as u32;
+  let fifth_byte = get_byte(&iter.next()) as u32;
+  let sixth_byte = get_byte(&iter.next()) as u32;
   println!("\tQDCOUNT: {}", 256 * fifth_byte + sixth_byte);
 
-  let seventh_byte = iter.next().unwrap().clone() as u32;
-  let eighth_byte = iter.next().unwrap().clone() as u32;
+  let seventh_byte = get_byte(&iter.next()) as u32;
+  let eighth_byte = get_byte(&iter.next()) as u32;
   println!("\tANCOUNT: {}", 256 * seventh_byte + eighth_byte);
 
-  let ninth_byte = iter.next().unwrap().clone() as u32;
-  let tenth_byte = iter.next().unwrap().clone() as u32;
+  let ninth_byte = get_byte(&iter.next()) as u32;
+  let tenth_byte = get_byte(&iter.next()) as u32;
   println!("\tNSCOUNT: {}", 256 * ninth_byte + tenth_byte);
 
-  let eleventh_byte = iter.next().unwrap().clone() as u32;
-  let twelwth_byte = iter.next().unwrap().clone() as u32;
+  let eleventh_byte = get_byte(&iter.next()) as u32;
+  let twelwth_byte = get_byte(&iter.next()) as u32;
   println!("\tARCOUNT: {}", 256 * eleventh_byte + twelwth_byte);
 
   let mut name_part_byte: &u8;
@@ -125,7 +136,7 @@ fn process_response(response: Vec<u8>, msg_id: &(u8, u8)) {
   } {
     let part_length = name_part_byte.clone();
     for _ in 0..part_length {
-      name.push(iter.next().unwrap().clone() as char);
+      name.push(get_byte(&iter.next()) as char);
     }
     name.push('.');
   }
@@ -156,10 +167,10 @@ fn process_response(response: Vec<u8>, msg_id: &(u8, u8)) {
   let class_byte_2 = iter.next().unwrap() as &u8;
   println!("\tCLASS: {}", 256 * class_byte_1 + class_byte_2);
 
-  let ttl_byte_1 = iter.next().unwrap().clone() as u32;
-  let ttl_byte_2 = iter.next().unwrap().clone() as u32;
-  let ttl_byte_3 = iter.next().unwrap().clone() as u32;
-  let ttl_byte_4 = iter.next().unwrap().clone() as u32;
+  let ttl_byte_1 = get_byte(&iter.next()) as u32;
+  let ttl_byte_2 = get_byte(&iter.next()) as u32;
+  let ttl_byte_3 = get_byte(&iter.next()) as u32;
+  let ttl_byte_4 = get_byte(&iter.next()) as u32;
   let ttl = (ttl_byte_1 << 24) + (ttl_byte_2 << 16) + (ttl_byte_3 << 8) + (ttl_byte_4 << 0);
   println!("\tttl: {} {} {} {} {}", ttl_byte_1, ttl_byte_2, ttl_byte_3, ttl_byte_4, ttl);
 
