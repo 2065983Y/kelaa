@@ -1,8 +1,12 @@
 #![feature(convert)]
 #![feature(udp)]
+#![feature(custom_derive)]
+#![feature(custom_derive, plugin)]
+#![plugin(num_macros)]
 //#![feature(core)]
 
 //extern crate core;
+extern crate num;
 
 use std::env;
 use std::process::exit;
@@ -11,8 +15,7 @@ use std::io::Read;
 use std::net::{Ipv4Addr, UdpSocket};
 use std::str::FromStr;
 use std::os::unix::io::AsRawFd;
-//use std::net::setsockopt;
-//use core::array::FixedSizeArray;
+use num::FromPrimitive;
 
 fn main() {
   let name_to_query = read_name_to_query_from_command_line();
@@ -24,7 +27,7 @@ fn main() {
   let udp_socket = bind_client_socket();
 
   let msg_id = (0x07, 0x09);  // TODO randomise message id
-  
+
   let query_vec = construct_a_record_query(name_to_query, msg_id);
   match udp_socket.send_to(&query_vec, (name_server_address, 53)) {
     Ok(bytes_written) => println!("Wrote {} bytes", bytes_written),
@@ -82,7 +85,8 @@ fn process_response(response: Vec<u8>, msg_id: &(u8, u8)) {
   println!("\t<must be three zero bits> {}", !(check_single_bit(fourth_byte, 6) && check_single_bit(fourth_byte, 5) && check_single_bit(fourth_byte, 4)));
   let rcode = fourth_byte & 15;
   println!("\trcode: {}", rcode);
-  if !check_rcode(rcode) {
+
+  if !check_rcode(FromPrimitive::from_u8(rcode).expect(format!("Could not parse {} as rcode", rcode).as_str())) {
     exit(11);
   }
 
@@ -198,26 +202,14 @@ fn construct_a_record_query(name_to_query: String, msg_id: (u8, u8)) -> Vec<u8> 
     query_vec
 }
 
-fn check_rcode(rcode: u8) -> bool {
-  if rcode != 0 {
-    if rcode == 1 {
-      println!("\trcode : Format error.");
+fn check_rcode(rcode: Rcode) -> bool {
+  match rcode {
+    Rcode::ROk => true,
+    _ => {
+        println!("\trcode: {:?}", rcode);
+        false
     }
-    if rcode == 2 {
-      println!("\trcode : Server failure.");
-    }
-    if rcode == 3 {
-      println!("\trcode : Name error.");
-    }
-    if rcode == 4 {
-      println!("\trcode : Not implemented.");
-    }
-    if rcode == 5 {
-      println!("\trcode : Refused.");
-    }
-    return false;
   }
-  true
 }
 
 fn print_type(type_code: u8) -> String {
@@ -293,4 +285,14 @@ fn read_name_to_query_from_command_line() -> String {
       exit(5);
     }
     args[1].clone()
+}
+
+#[derive(Debug, PartialEq, NumFromPrimitive)]
+enum Rcode {
+  ROk = 0,
+  FormatError = 1,
+  ServerFailure = 2,
+  NameError = 3,
+  NotImplemented = 4,
+  Refused = 5
 }
