@@ -95,7 +95,7 @@ fn process_response(response: Vec<u8>, msg_id: &(u8, u8)) {
   let mut name = String::new();
   while {
     name_part_byte = get_byte(&iter.next()) as u8;
-    name_part_byte != 0u8
+    name_part_byte != 0
   } {
     let part_length = name_part_byte.clone();
     for _ in 0..part_length {
