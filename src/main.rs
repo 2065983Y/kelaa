@@ -255,7 +255,7 @@ fn parse_resolv_conf(file: File) -> String {
   let ns_lines = s.split("\n").filter(|&l| l.starts_with("nameserver"));
   let mut ns_addresses = ns_lines.flat_map(|l| l.split_whitespace().skip(1).next());
   return ns_addresses.next().map(|x| x.to_string()).
-    expect("Could find read name server from file");
+    expect((format!("Could find read name server from {}", s).as_str()));
 }
 
 fn parse_ipv4_address(src: String) -> Ipv4Addr {
