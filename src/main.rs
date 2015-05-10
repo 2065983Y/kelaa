@@ -235,16 +235,9 @@ fn check_rcode(rcode: Rcode) -> bool {
 }
 
 fn print_type(type_code: u8) -> String {
-  if type_code == 1 { return "A".to_string(); }
-  if type_code == 2 { return "NS".to_string(); }
-  if type_code == 5 { return "CNAME".to_string(); }
-  if type_code == 6 { return "SOA".to_string(); }
-  if type_code == 11 { return "WKS".to_string(); }
-  if type_code == 12 { return "PTR".to_string(); }
-  if type_code == 15 { return "MX".to_string(); }
-  if type_code == 33 { return "SRV".to_string(); }
-  if type_code == 38 { return "A6".to_string(); }
-  return format!("Unknown type {}", type_code);
+  let record_type: RecordType = FromPrimitive::from_u8(type_code).
+    expect(format!("Unknown type '{}'", type_code).as_str());
+  format!("{:?}", record_type)
 }
 
 fn check_single_bit(b: &u8, position: u32) -> bool {
@@ -317,4 +310,17 @@ enum Rcode {
   NameError = 3,
   NotImplemented = 4,
   Refused = 5
+}
+
+#[derive(Debug, PartialEq, NumFromPrimitive)]
+enum RecordType {
+  A = 1,
+  NS = 2,
+  CNAME = 5,
+  SOA = 6,
+  WKS = 11,
+  PTR = 12,
+  MX = 15,
+  SRV = 33,
+  A6 = 38
 }
