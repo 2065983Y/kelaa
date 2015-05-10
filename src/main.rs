@@ -18,7 +18,7 @@ fn main() {
   let name_to_query = read_name_to_query_from_command_line();
   println!("Name to query: {}", name_to_query);
 
-  let name_server_address = parse_ipv4_address(read_nameserver().unwrap());
+  let name_server_address = parse_ipv4_address(read_nameserver());
   println!("Using name server : {}", name_server_address);
 
   let udp_socket = bind_client_socket();
@@ -238,23 +238,24 @@ fn check_single_bit(b: &u8, position: u32) -> bool {
   powered == b & (1 << position)
 }
 
-fn read_nameserver() -> Option<String> {
+fn read_nameserver() -> String {
   match File::open("/etc/resolv.conf") {
     Ok(file) => parse_resolv_conf(file),
     Err(e) => {
       println!("Could not read /etc/resolv.conf : {}", e);
-      None
+      exit(6);
     }
   }
 }
 
-fn parse_resolv_conf(file: File) -> Option<String> {
+fn parse_resolv_conf(file: File) -> String {
   let mut s = String::new();
   let mut f = file;
   f.read_to_string(&mut s);
   let ns_lines = s.split("\n").filter(|&l| l.starts_with("nameserver"));
   let mut ns_addresses = ns_lines.flat_map(|l| l.split_whitespace().skip(1).next());
-  return ns_addresses.next().map(|x| x.to_string());
+  return ns_addresses.next().map(|x| x.to_string()).
+    expect("Could find read name server from file");
 }
 
 fn parse_ipv4_address(src: String) -> Ipv4Addr {
