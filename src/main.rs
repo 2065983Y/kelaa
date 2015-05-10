@@ -24,7 +24,7 @@ fn main() {
   let udp_socket = bind_client_socket();
 
   let msg_id = (0x07, 0x09);  // TODO randomise message id
-  let mut query_vec = construct_a_record_query(name_to_query, msg_id);
+  let query_vec = construct_a_record_query(name_to_query, msg_id);
 
   let mut response_buf = [0; 100];
 
