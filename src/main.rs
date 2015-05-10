@@ -24,10 +24,8 @@ fn main() {
   let udp_socket = bind_client_socket();
 
   let msg_id = (0x07, 0x09);  // TODO randomise message id
+  
   let query_vec = construct_a_record_query(name_to_query, msg_id);
-
-  let mut response_buf = [0; 100];
-
   match udp_socket.send_to(&query_vec, (name_server_address, 53)) {
     Ok(bytes_written) => println!("Wrote {} bytes", bytes_written),
     Err(e) => {
@@ -36,6 +34,7 @@ fn main() {
     }
   }
 
+  let mut response_buf = [0; 100];
   let processed_bytes = match udp_socket.recv_from(&mut response_buf) {
     Ok((n, address)) => {
       let mut response_vec: Vec<u8> = Vec::new();
