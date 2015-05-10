@@ -29,7 +29,7 @@ fn main() {
   let mut response_buf = [0; 100];
 
   match udp_socket.send_to(&query_vec, (name_server_address, 53)) {
-    Ok(bytes_written) => println!("wrote: {}", bytes_written),
+    Ok(bytes_written) => println!("Wrote {} bytes", bytes_written),
     Err(e) => {
       println!("Could not make query: {}", e);
       exit(19);
