@@ -21,11 +21,7 @@ fn main() {
   let name_server_address = parse_ipv4_address(read_nameserver().unwrap());
   println!("Using name server : {}", name_server_address);
 
-  let client_local_port = "127.0.0.1:65530"; // todo randomise and retry
-  let udp_socket = (UdpSocket::bind(client_local_port).ok().
-    expect(format!("Could not bind UDP socket to {}", client_local_port).as_str()));
-  println!("Bound client UDP socket {}", client_local_port);
-  set_socket_timeout(&udp_socket);
+  let udp_socket = bind_client_socket();
 
   let mut query_vec: Vec<u8> = Vec::new();
   let msg_id_1 = 0x07;
@@ -264,6 +260,16 @@ fn parse_ipv4_address(src: String) -> Ipv4Addr {
   }
 }
 
+fn bind_client_socket() -> UdpSocket {
+  let client_local_port = "127.0.0.1:65530"; // todo randomise and retry
+  let udp_socket = (UdpSocket::bind(client_local_port).ok().
+    expect(format!("Could not bind UDP socket to {}", client_local_port).as_str()));
+  println!("Bound client UDP socket {}", client_local_port);
+  set_socket_timeout(&udp_socket);
+  udp_socket
+}
+
+// TODO implement :)
 fn set_socket_timeout(socket: &UdpSocket) {
   socket.set_time_to_live(1);
   let raw_fd = socket.as_raw_fd();
