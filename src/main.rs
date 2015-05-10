@@ -23,34 +23,8 @@ fn main() {
 
   let udp_socket = bind_client_socket();
 
-  let mut query_vec: Vec<u8> = Vec::new();
-  let msg_id_1 = 0x07;
-  let msg_id_2 = 0x09;
-  query_vec.push(msg_id_1); // message id 1
-  query_vec.push(msg_id_2); // message id 2
-  query_vec.push(0x01); // qr, opcode, aa, tc, rd
-  query_vec.push(0x00); // ra, res1, res2, res3, rcode
-  query_vec.push(0x00); // qdcount 1
-  query_vec.push(0x01); // qdcount 2
-  query_vec.push(0x00); // ancount 1
-  query_vec.push(0x00); // ancount 2
-  query_vec.push(0x00); // nscount 1
-  query_vec.push(0x00); // nscount 2
-  query_vec.push(0x00); // arcount 1
-  query_vec.push(0x00); // arcount 2
-
-  for p in name_to_query.split(".") {
-    query_vec.push(p.as_bytes().len() as u8); // length
-    for &c in p.as_bytes() {
-      query_vec.push(c as u8); // query
-    }
-  }
-  query_vec.push(0x00); // end name
-
-  query_vec.push(0x00); // qtype 1
-  query_vec.push(0x01); // qtype 2
-  query_vec.push(0x00); // qclass 1
-  query_vec.push(0x01); // qclass 2
+  let msg_id = (0x07, 0x09);  // TODO randomise message id
+  let mut query_vec = construct_a_record_query(name_to_query, msg_id);
 
   let mut response_buf = [0; 100];
 
@@ -69,7 +43,7 @@ fn main() {
         response_vec.push(x);
       }
       println!("Got {} bytes from {} ", n, address);
-      process_response(response_vec, &msg_id_1, &msg_id_2);
+      process_response(response_vec, &msg_id.0, &msg_id.1);
       println!("\nDone.");
       n
     },
@@ -92,7 +66,7 @@ fn process_response(response: Vec<u8>, msg_id_1: &u8, msg_id_2: &u8) {
   let received_msg_id_2 = iter.next().unwrap() as &u8;
   if (msg_id_2 != received_msg_id_2) {
     println!("Error: expected second byte of message id to be {} but was {}",
-      msg_id_2, received_msg_id_2);
+      msg_id_1, received_msg_id_2);
     exit(9);
   }
 
@@ -192,6 +166,36 @@ fn process_response(response: Vec<u8>, msg_id_1: &u8, msg_id_2: &u8) {
     print!("{} ", byte.unwrap() as &u8);
   }
 */
+}
+
+fn construct_a_record_query(name_to_query: String, msg_id: (u8, u8)) -> Vec<u8> {
+    let mut query_vec: Vec<u8> = Vec::new();
+    query_vec.push(msg_id.0); // message id 1
+    query_vec.push(msg_id.1); // message id 2
+    query_vec.push(0x01); // qr, opcode, aa, tc, rd
+    query_vec.push(0x00); // ra, res1, res2, res3, rcode
+    query_vec.push(0x00); // qdcount 1
+    query_vec.push(0x01); // qdcount 2
+    query_vec.push(0x00); // ancount 1
+    query_vec.push(0x00); // ancount 2
+    query_vec.push(0x00); // nscount 1
+    query_vec.push(0x00); // nscount 2
+    query_vec.push(0x00); // arcount 1
+    query_vec.push(0x00); // arcount 2
+
+    for p in name_to_query.split(".") {
+      query_vec.push(p.as_bytes().len() as u8); // length
+      for &c in p.as_bytes() {
+        query_vec.push(c as u8); // query
+      }
+    }
+    query_vec.push(0x00); // end name
+
+    query_vec.push(0x00); // qtype 1
+    query_vec.push(0x01); // qtype 2
+    query_vec.push(0x00); // qclass 1
+    query_vec.push(0x01); // qclass 2
+    query_vec
 }
 
 fn check_rcode(rcode: u8) -> bool {
