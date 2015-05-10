@@ -15,7 +15,6 @@ use std::io::Read;
 use std::net::{Ipv4Addr, UdpSocket};
 use std::str::FromStr;
 use std::os::unix::io::AsRawFd;
-use std::slice::Iter;
 use num::FromPrimitive;
 
 fn main() {
@@ -57,30 +56,6 @@ fn main() {
   };
   println!("Processed all {} bytes, exiting. Bye!.", processed_bytes);
 }
-
-fn process_next_byte<F>(byte_option: &Option<&u8>, processor: F) -> u8
-  where F: Fn(&u8) -> u8 {
-    let b = byte_option.expect("Iterator is empty!");
-    processor(b)
-}
-
-fn assert_byte(byte_option: &Option<&u8>, expected: &u8, msg: &str) {
-    process_next_byte(byte_option, |b| {
-      if expected != b {
-        println!("Error: expected {} to be {} but was {}",
-          msg, expected, b);
-        exit(9);
-      }
-      b.clone()
-    });
-}
-
-fn get_byte(byte_option: &Option<&u8>) -> u8 {
-  process_next_byte(byte_option, |b| {
-    b.clone()
-  })
-}
-
 
 fn process_response(response: Vec<u8>, msg_id: &(u8, u8)) {
   let mut iter = response.iter();
@@ -183,6 +158,29 @@ fn process_response(response: Vec<u8>, msg_id: &(u8, u8)) {
   for _ in 0..rdlength {
     print!("{}.", get_byte(&iter.next()) as u8);
   }
+}
+
+fn process_next_byte<F>(byte_option: &Option<&u8>, processor: F) -> u8
+  where F: Fn(&u8) -> u8 {
+    let b = byte_option.expect("Iterator is empty!");
+    processor(b)
+}
+
+fn assert_byte(byte_option: &Option<&u8>, expected: &u8, msg: &str) {
+    process_next_byte(byte_option, |b| {
+      if expected != b {
+        println!("Error: expected {} to be {} but was {}",
+          msg, expected, b);
+        exit(9);
+      }
+      b.clone()
+    });
+}
+
+fn get_byte(byte_option: &Option<&u8>) -> u8 {
+  process_next_byte(byte_option, |b| {
+    b.clone()
+  })
 }
 
 fn construct_a_record_query(name_to_query: String, msg_id: (u8, u8)) -> Vec<u8> {
