@@ -183,15 +183,6 @@ fn process_response(response: Vec<u8>, msg_id: &(u8, u8)) {
   for _ in 0..rdlength {
     print!("{}.", get_byte(&iter.next()) as u8);
   }
-/*
-  let mut byte = None;
-  while {
-    byte = iter.next();
-    byte != None
-  } {
-    print!("{} ", byte.unwrap() as &u8);
-  }
-*/
 }
 
 fn construct_a_record_query(name_to_query: String, msg_id: (u8, u8)) -> Vec<u8> {
