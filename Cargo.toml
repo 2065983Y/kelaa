@@ -1,8 +1,8 @@
 [package]
 name = "kelaa"
 version = "0.1.0"
-authors = ["Timo Rantalaiho <timo.rantalaiho@reaktor.com>"]
+authors = ["Timo Rantalaiho <timo.rantalaiho@reaktor.com>", "Mihail Janev <misho.janew@gmail.com"]
 
 [dependencies]
 num = "*"
-num-macros = "*"
+num-derive = "*"

@@ -1,12 +1,8 @@
-#![feature(convert)]
-#![feature(udp)]
-#![feature(custom_derive)]
-#![feature(custom_derive, plugin)]
-#![plugin(num_macros)]
-//#![feature(core)]
-
 //extern crate core;
 extern crate num;
+
+#[macro_use]
+extern crate num_derive;
 
 use std::env;
 use std::process::exit;
@@ -38,22 +34,15 @@ fn main() {
   }
 
   let mut response_buf = [0; 100];
-  let processed_bytes = match udp_socket.recv_from(&mut response_buf) {
-    Ok((n, address)) => {
-      let mut response_vec: Vec<u8> = Vec::new();
-      for &x in response_buf.iter() {
-        response_vec.push(x);
-      }
-      println!("Got {} bytes from {} ", n, address);
-      process_response(response_vec, &msg_id);
-      println!("\nDone.");
-      n
-    },
-    Err(e) => {
-      println!("Could not read answer: {}", e);
-      -1
-    }
-  };
+  let (n, address) = udp_socket.recv_from(&mut response_buf).unwrap();
+  let mut response_vec: Vec<u8> = Vec::new();
+  for &x in response_buf.iter() {
+    response_vec.push(x);
+  }
+  println!("Got {} bytes from {} ", n, address);
+  process_response(response_vec, &msg_id);
+  println!("\nDone.");
+  let processed_bytes = n;
   println!("Processed all {} bytes, exiting. Bye!.", processed_bytes);
 }
 
@@ -257,7 +246,7 @@ fn bind_client_socket() -> UdpSocket {
 
 // TODO implement :)
 fn set_socket_timeout(socket: &UdpSocket) {
-  let _ = socket.set_time_to_live(1);
+  let _ = socket.set_ttl(1);
   let _ /* raw_fd */  = socket.as_raw_fd();
   //setsockopt(raw_fd.as_sock_t(), SO_RCVTIMEO, 1000, 1000);
 }
@@ -271,7 +260,7 @@ fn read_name_to_query_from_command_line() -> String {
     args[1].clone()
 }
 
-#[derive(Debug, PartialEq, NumFromPrimitive)]
+#[derive(Debug, PartialEq, FromPrimitive)]
 enum Rcode {
   ROk = 0,
   FormatError = 1,
@@ -281,7 +270,7 @@ enum Rcode {
   Refused = 5
 }
 
-#[derive(Debug, PartialEq, NumFromPrimitive)]
+#[derive(Debug, PartialEq, FromPrimitive)]
 enum RecordType {
   A = 1,
   NS = 2,
